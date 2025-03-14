@@ -1,0 +1,103 @@
+/**
+ * Country State City Field Overrides
+ * 
+ * This file contains custom styles to override the default styling of the
+ * @davzon/react-country-state-city package components to match the Tailwind-based
+ * design system used throughout the application.
+ * 
+ * These styles target specific elements within the library's components to ensure
+ * consistent appearance with other form elements, including proper dark mode support.
+ */
+
+/* Target the search box input */
+.rcs-country-select .stsearch-box input,
+.rcs-state-select .stsearch-box input,
+.rcs-city-select .stsearch-box input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  border-radius: 0.5rem; /* rounded-lg */
+  font-size: 0.875rem; /* text-sm */
+  color: #374151; /* text-gray-700 */
+  outline: none;
+}
+
+/* Target the dropdown container */
+.rcs-country-select .stdropdown-container,
+.rcs-state-select .stdropdown-container,
+.rcs-city-select .stdropdown-container {
+  text-align: left;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  position: relative;
+  border-radius: 0.5rem; /* rounded-lg */
+}
+
+/* Focus styles */
+.rcs-country-select .stsearch-box input:focus,
+.rcs-state-select .stsearch-box input:focus,
+.rcs-city-select .stsearch-box input:focus {
+  border-color: #3b82f6; /* focus:border-blue-500 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* focus ring effect */
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .dark .rcs-country-select .stsearch-box input,
+  .dark .rcs-state-select .stsearch-box input,
+  .dark .rcs-city-select .stsearch-box input {
+    background-color: #374151; /* dark:bg-gray-700 */
+    border-color: #4b5563; /* dark:border-gray-600 */
+    color: white; /* dark:text-white */
+  }
+  
+  .dark .rcs-country-select .stdropdown-container,
+  .dark .rcs-state-select .stdropdown-container,
+  .dark .rcs-city-select .stdropdown-container {
+    background-color: #374151; /* dark:bg-gray-700 */
+    border-color: #4b5563; /* dark:border-gray-600 */
+    color: white; /* dark:text-white */
+  }
+  
+  /* Dropdown options in dark mode */
+  .dark .rcs-country-select .stdropdown-options,
+  .dark .rcs-state-select .stdropdown-options,
+  .dark .rcs-city-select .stdropdown-options {
+    background-color: #374151; /* dark:bg-gray-700 */
+    color: white; /* dark:text-white */
+  }
+  
+  .dark .rcs-country-select .stdropdown-options .stdropdown-option:hover,
+  .dark .rcs-state-select .stdropdown-options .stdropdown-option:hover,
+  .dark .rcs-city-select .stdropdown-options .stdropdown-option:hover {
+    background-color: #4b5563; /* dark:hover:bg-gray-600 */
+  }
+}
+
+/* Disabled state */
+.rcs-country-select .stsearch-box input:disabled,
+.rcs-state-select .stsearch-box input:disabled,
+.rcs-city-select .stsearch-box input:disabled,
+.rcs-country-select .stdropdown-container.disabled,
+.rcs-state-select .stdropdown-container.disabled,
+.rcs-city-select .stdropdown-container.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Error state */
+.country-state-city-error .rcs-country-select .stsearch-box input,
+.country-state-city-error .rcs-state-select .stsearch-box input,
+.country-state-city-error .rcs-city-select .stsearch-box input,
+.country-state-city-error .rcs-country-select .stdropdown-container,
+.country-state-city-error .rcs-state-select .stdropdown-container,
+.country-state-city-error .rcs-city-select .stdropdown-container {
+  border-color: #ef4444; /* border-red-500 */
+}
+
+.country-state-city-error .rcs-country-select .stsearch-box input:focus,
+.country-state-city-error .rcs-state-select .stsearch-box input:focus,
+.country-state-city-error .rcs-city-select .stsearch-box input:focus {
+  border-color: #ef4444; /* border-red-500 */
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); /* red focus ring */
+}
