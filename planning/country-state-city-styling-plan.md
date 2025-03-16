@@ -1,171 +1,176 @@
-# CountryStateCityField Styling Improvement Plan
+# Custom CountryStateCityField Component Implementation Plan
 
-## Approach Overview
+Based on analysis of the current implementation, this plan outlines the approach for implementing a custom CountryStateCityField component that addresses styling issues and adds requested features.
 
-The best approach to override the library's styles without unintended consequences is to create a dedicated CSS file with targeted selectors. This approach:
+## Current Issues
 
-1. Keeps styling separate from component logic
-2. Provides better maintainability
-3. Avoids the pitfalls of using `!important` flags
-4. Allows for easy dark mode support
-
-```mermaid
-graph TD
-    A[Create Custom CSS File] --> B[Target Specific Selectors]
-    B --> C[Apply Tailwind-like Styles]
-    C --> D[Add Dark Mode Support]
-    D --> E[Import in Component]
-```
+1. **Styling Inconsistency**: The current component doesn't match the TailAdmin styling, especially in dark mode.
+2. **External Data Dependency**: The component fetches data from GitHub repositories, which could lead to reliability issues if those repositories change or become unavailable.
+3. **No Favourite Countries**: There's no way to prioritise frequently used countries like AU, NZ, SG, UK, US.
+4. **Default Country**: Australia isn't set as the default country, which would be convenient for primarily Australian client base.
 
 ## Implementation Plan
 
-### 1. Create a Custom CSS File
+### 1. Data Management Approach
 
-Create a new file at `src/styles/country-state-city-overrides.css` with targeted selectors to override the library's default styles:
+We'll create a hybrid approach for data management:
 
-```css
-/* Target the search box input */
-.rcs-country-select .stsearch-box input,
-.rcs-state-select .stsearch-box input,
-.rcs-city-select .stsearch-box input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db; /* border-gray-300 */
-  border-radius: 0.5rem; /* rounded-lg */
-  font-size: 0.875rem; /* text-sm */
-  color: #374151; /* text-gray-700 */
-  outline: none;
-}
+- **Store data locally**: We'll download and store the country, state, and city data locally in JSON files to ensure reliability.
+- **Maintain data structure**: We'll keep the same data structure as the original package to minimise changes to the component interface.
+- **Add data versioning**: We'll include a version number in the data files to make future updates easier.
 
-/* Target the dropdown container */
-.rcs-country-select .stdropdown-container,
-.rcs-state-select .stdropdown-container,
-.rcs-city-select .stdropdown-container {
-  text-align: left;
-  border: 1px solid #d1d5db; /* border-gray-300 */
-  position: relative;
-  border-radius: 0.5rem; /* rounded-lg */
-}
-
-/* Focus styles */
-.rcs-country-select .stsearch-box input:focus,
-.rcs-state-select .stsearch-box input:focus,
-.rcs-city-select .stsearch-box input:focus {
-  border-color: #3b82f6; /* focus:border-blue-500 */
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* focus ring effect */
-}
-
-/* Dark mode styles */
-@media (prefers-color-scheme: dark) {
-  .dark .rcs-country-select .stsearch-box input,
-  .dark .rcs-state-select .stsearch-box input,
-  .dark .rcs-city-select .stsearch-box input {
-    background-color: #374151; /* dark:bg-gray-700 */
-    border-color: #4b5563; /* dark:border-gray-600 */
-    color: white; /* dark:text-white */
-  }
-  
-  .dark .rcs-country-select .stdropdown-container,
-  .dark .rcs-state-select .stdropdown-container,
-  .dark .rcs-city-select .stdropdown-container {
-    background-color: #374151; /* dark:bg-gray-700 */
-    border-color: #4b5563; /* dark:border-gray-600 */
-    color: white; /* dark:text-white */
-  }
-  
-  /* Dropdown options in dark mode */
-  .dark .rcs-country-select .stdropdown-options,
-  .dark .rcs-state-select .stdropdown-options,
-  .dark .rcs-city-select .stdropdown-options {
-    background-color: #374151; /* dark:bg-gray-700 */
-    color: white; /* dark:text-white */
-  }
-  
-  .dark .rcs-country-select .stdropdown-options .stdropdown-option:hover,
-  .dark .rcs-state-select .stdropdown-options .stdropdown-option:hover,
-  .dark .rcs-city-select .stdropdown-options .stdropdown-option:hover {
-    background-color: #4b5563; /* dark:hover:bg-gray-600 */
-  }
-}
-
-/* Disabled state */
-.rcs-country-select .stsearch-box input:disabled,
-.rcs-state-select .stsearch-box input:disabled,
-.rcs-city-select .stsearch-box input:disabled,
-.rcs-country-select .stdropdown-container.disabled,
-.rcs-state-select .stdropdown-container.disabled,
-.rcs-city-select .stdropdown-container.disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Error state */
-.country-state-city-error .rcs-country-select .stsearch-box input,
-.country-state-city-error .rcs-state-select .stsearch-box input,
-.country-state-city-error .rcs-city-select .stsearch-box input,
-.country-state-city-error .rcs-country-select .stdropdown-container,
-.country-state-city-error .rcs-state-select .stdropdown-container,
-.country-state-city-error .rcs-city-select .stdropdown-container {
-  border-color: #ef4444; /* border-red-500 */
-}
-
-.country-state-city-error .rcs-country-select .stsearch-box input:focus,
-.country-state-city-error .rcs-state-select .stsearch-box input:focus,
-.country-state-city-error .rcs-city-select .stsearch-box input:focus {
-  border-color: #ef4444; /* border-red-500 */
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); /* red focus ring */
-}
+```mermaid
+flowchart TD
+    A[Local JSON Data Files] --> B[Data Loading Service]
+    B --> C[CountryStateCityField Component]
+    C --> D[Country Select]
+    C --> E[State Select]
+    C --> F[City Select]
 ```
 
-### 2. Update the CountryStateCityField Component
+### 2. Component Structure
 
-Modify the CountryStateCityField component to import the custom CSS file:
+We'll create a custom implementation with the following components:
 
-```tsx
-import React, { useState, useEffect } from 'react';
-import { CountrySelect, StateSelect, CitySelect, CountryData, StateData, CityData } from '@davzon/react-country-state-city';
-import '@davzon/react-country-state-city/dist/react-country-state-city.css';
-// Import our custom overrides (must come after the library's CSS)
-import '../../../styles/country-state-city-overrides.css';
-import Label from '../form/Label';
+1. **LocationDataService**: A service to load and manage location data.
+2. **CountryStateCityField**: The main component that orchestrates the selection process.
+3. **CustomSelect**: A reusable select component styled according to TailAdmin guidelines.
+4. **FlagIcon**: A component to display country flags.
 
-// Rest of the component remains the same
+```mermaid
+classDiagram
+    class LocationDataService {
+        +getCountries()
+        +getStates(countryId)
+        +getCities(countryId, stateId)
+        +getFavouriteCountries()
+    }
+    
+    class CountryStateCityField {
+        -countryId: number
+        -stateId: number
+        -cityId: number
+        -countryName: string
+        -stateName: string
+        -cityName: string
+        +onChange(data)
+    }
+    
+    class CustomSelect {
+        +options: array
+        +value: string
+        +onChange: function
+        +placeholder: string
+        +disabled: boolean
+    }
+    
+    class FlagIcon {
+        +countryCode: string
+    }
+    
+    CountryStateCityField --> LocationDataService: uses
+    CountryStateCityField --> CustomSelect: uses
+    CustomSelect --> FlagIcon: uses for country select
 ```
 
-### 3. Remove the Inline Styles
+### 3. Styling Improvements
 
-Remove the current inline styles from the component and the `<style>` tag.
+We'll implement styling that matches the TailAdmin design system:
 
-### 4. Add Error State Handling
+- Use the same border styles, colours, and focus states as other form components.
+- Implement proper dark mode support.
+- Ensure consistent spacing and typography.
+- Add proper error state styling.
 
-Since we're removing the inline styles that handled error states, we need to add a class-based approach:
+```mermaid
+flowchart LR
+    A[TailAdmin Design System] --> B[Input Styling]
+    A --> C[Select Styling]
+    A --> D[Label Styling]
+    A --> E[Error State Styling]
+    B & C & D & E --> F[CountryStateCityField Styling]
+```
 
-```tsx
-// Add a CSS class for error state
-const errorClass = error ? 'country-state-city-error' : '';
+### 4. Feature Enhancements
 
-return (
-  <div className={`space-y-4 ${className} ${errorClass}`}>
-    {/* Component content */}
-  </div>
-);
+1. **Favourite Countries**:
+   - Add a "Favourites" section at the top of the country dropdown.
+   - Include AU, NZ, SG, UK, US in this section.
+   - Add a visual separator between favourites and other countries.
+
+2. **Default Selection**:
+   - Set Australia as the default country when no initial value is provided.
+
+3. **Search/Filter Improvements**:
+   - Enhance the search functionality to match on country codes and partial names.
+   - Optimise search performance for large datasets.
+
+4. **Accessibility Improvements**:
+   - Add proper ARIA labels and roles.
+   - Ensure keyboard navigation works correctly.
+   - Add screen reader support.
+
+### 5. Implementation Steps
+
+1. **Data Preparation**:
+   - Download the country, state, and city data from the GitHub repositories.
+   - Process and optimise the data for local storage.
+   - Add favourite country flags to the data structure.
+
+2. **Component Implementation**:
+   - Create the LocationDataService to manage data loading and filtering.
+   - Implement the CustomSelect component based on the TailAdmin design system.
+   - Build the FlagIcon component for country flags.
+   - Implement the main CountryStateCityField component.
+
+3. **Styling Implementation**:
+   - Create CSS styles that match the TailAdmin design system.
+   - Implement dark mode support.
+   - Add responsive styling for different screen sizes.
+
+4. **Testing**:
+   - Test the component with various initial values.
+   - Verify that the cascading selection works correctly.
+   - Test dark mode and error states.
+   - Ensure accessibility requirements are met.
+
+5. **Integration**:
+   - Update the ContactForm component to use the new CountryStateCityField.
+   - Verify that the data is correctly passed to and from the component.
+
+### 6. File Structure
+
+```
+src/
+├── components/
+│   └── custom/
+│       ├── CountryStateCityField.tsx       # Main component
+│       ├── CustomSelect.tsx                # Reusable select component
+│       └── FlagIcon.tsx                    # Country flag component
+├── services/
+│   └── LocationDataService.ts              # Data loading and management
+├── data/
+│   ├── countries.json                      # Country data
+│   ├── states.json                         # State data
+│   └── cities.json                         # City data
+└── styles/
+    └── country-state-city.css              # Component-specific styles
 ```
 
 ## Benefits of This Approach
 
-1. **Maintainability**: Keeping styles in a separate CSS file makes them easier to maintain and update
-2. **Specificity**: Using targeted selectors ensures we only override what we need
-3. **No !important flags**: Avoids the pitfalls of using !important, which can make future styling changes difficult
-4. **Clean component code**: Removes styling logic from the component, making it cleaner and more focused
-5. **Consistent styling**: Ensures the country, state, and city selectors match the rest of the form inputs
+1. **Reliability**: By storing data locally, we eliminate dependency on external repositories.
+2. **Consistency**: The component will match the TailAdmin design system, including dark mode.
+3. **User Experience**: Favourite countries and default selection will improve usability.
+4. **Performance**: Local data and optimised search will improve performance.
+5. **Maintainability**: Clean code structure and separation of concerns will make future updates easier.
 
-## Testing Plan
+## Timeline Estimate
 
-After implementing these changes, we should test:
+- Data preparation: 1-2 hours
+- Component implementation: 3-4 hours
+- Styling implementation: 2-3 hours
+- Testing and refinement: 2-3 hours
+- Integration: 1-2 hours
 
-1. Light and dark mode appearance
-2. Error state styling
-3. Disabled state styling
-4. Focus state styling
-5. Responsive behavior
+Total: 9-14 hours
