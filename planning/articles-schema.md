@@ -1,16 +1,4 @@
-You're absolutely right. Having a separate `articles` collection, distinct from `knowledgeBaseArticles`, is an excellent idea for reusability and flexibility. This allows you to:
-
-*   **Use articles in multiple contexts:** You can link the same article to the Knowledge Base, the Process Hub, Training Modules, or even display them contextually within other Hubs.
-*   **Avoid data duplication:** You don't need to copy and paste the same content into multiple places.
-*   **Centralized management:** You can manage and update articles in one place, and the changes will be reflected everywhere the article is used.
-*   **Future-Proofing:**  This separation of concerns makes your system more adaptable to future changes and expansions.
-
-Here's the `articles-schema.md` file, and I'll also note how this affects the other schemas (like `knowledgeBaseArticles`):
-
-**`articles-schema.md`:**
-
-```markdown
-# Articles Schema (`articles` Collection)
+ Articles Schema (`articles` Collection)
 
 This document defines the structure of the `articles` collection in Firestore. This collection stores reusable article content that can be used in various parts of the Jezweb Hub (Knowledge Base, Process Hub, Training Modules, etc.).
 
