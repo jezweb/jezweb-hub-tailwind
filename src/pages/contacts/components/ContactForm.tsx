@@ -121,8 +121,17 @@ const ContactForm: React.FC<ContactFormProps> = ({
   const [locationData, setLocationData] = useState({
     countryId: 0,
     stateId: 0,
-    cityId: 0
+    cityId: 0,
+    country: '',
+    state: '',
+    city: ''
   });
+
+  // Debug log for initialData and locationData
+  useEffect(() => {
+    console.log('ContactForm initialData:', initialData);
+    console.log('ContactForm locationData:', locationData);
+  }, [initialData, locationData]);
 
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -143,6 +152,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
   // Update form data when selectedContact changes or initialData is provided
   useEffect(() => {
     if (isEditMode && selectedContact) {
+      // Set form data from selected contact
       setFormData({
         firstName: selectedContact.firstName,
         lastName: selectedContact.lastName,
@@ -162,8 +172,41 @@ const ContactForm: React.FC<ContactFormProps> = ({
         color: selectedContact.color || '',
         icon: selectedContact.icon || ''
       });
+      
+      // Set location data from selected contact
+      setLocationData({
+        countryId: 0, // We don't have IDs from Firestore, will be looked up by name
+        stateId: 0,
+        cityId: 0,
+        country: selectedContact.country || '',
+        state: selectedContact.state || '',
+        city: selectedContact.city || ''
+      });
+      
+      console.log('Location data initialized from selectedContact:', {
+        country: selectedContact.country,
+        state: selectedContact.state,
+        city: selectedContact.city
+      });
     } else if (initialData) {
+      // Set form data from initial data
       setFormData(initialData);
+      
+      // Set location data from initial data
+      setLocationData({
+        countryId: 0, // We don't have IDs from initialData, will be looked up by name
+        stateId: 0,
+        cityId: 0,
+        country: initialData.country || '',
+        state: initialData.state || '',
+        city: initialData.city || ''
+      });
+      
+      console.log('Location data initialized from initialData:', {
+        country: initialData.country,
+        state: initialData.state,
+        city: initialData.city
+      });
     }
   }, [isEditMode, selectedContact, initialData]);
 
@@ -256,7 +299,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
     setLocationData({
       countryId: data.country.id,
       stateId: data.state.id,
-      cityId: data.city.id
+      cityId: data.city.id,
+      country: data.country.name,
+      state: data.state.name,
+      city: data.city.name
     });
     
     setFormData(prev => ({
@@ -265,6 +311,15 @@ const ContactForm: React.FC<ContactFormProps> = ({
       state: data.state.name,
       city: data.city.name
     }));
+    
+    console.log('Location data updated:', {
+      countryId: data.country.id,
+      stateId: data.state.id,
+      cityId: data.city.id,
+      country: data.country.name,
+      state: data.state.name,
+      city: data.city.name
+    });
   };
 
   // Handle image upload
@@ -508,7 +563,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
                 initialData={{
                   countryId: locationData.countryId,
                   stateId: locationData.stateId,
-                  cityId: locationData.cityId
+                  cityId: locationData.cityId,
+                  country: locationData.country,
+                  state: locationData.state,
+                  city: locationData.city
                 }}
               />
             </div>

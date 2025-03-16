@@ -105,7 +105,16 @@ const ContactEdit: React.FC = () => {
             department: selectedContact.department || '',
             notes: selectedContact.notes || '',
             role: selectedContact.role || 'staff',
-            status: selectedContact.status || 'active'
+            status: selectedContact.status || 'active',
+            // Add missing location fields
+            country: selectedContact.country || '',
+            state: selectedContact.state || '',
+            city: selectedContact.city || '',
+            // Add other fields that might be missing
+            linkedIn: selectedContact.linkedIn || '',
+            image: selectedContact.image || '',
+            color: selectedContact.color || '',
+            icon: selectedContact.icon || ''
           } : undefined}
           onSuccess={handleSuccess}
           onCancel={handleCancel}
