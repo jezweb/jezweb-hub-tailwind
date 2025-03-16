@@ -1,25 +1,46 @@
-# TailAdmin Pro - React.js (v2.0)
+# Jezweb Hub
 
-[TailAdmin](https://tailadmin.com) is a modern, responsive, and customizable admin dashboard template built using Tailwind CSS and React.js. It is designed to help developers build beautiful and functional dashboards quickly and easily.
+Jezweb Hub is a comprehensive dashboard application for managing clients, websites, projects, and support tickets. Built with React and Firebase, it provides a centralised platform for Jezweb's business operations.
 
-## Quick Links
+## Features
 
-- [✨ Visit Website](https://tailadmin.com)
-- [📄 Documentation](https://tailadmin.com/docs)
-- [⬇️ Download](https://tailadmin.com/download)
-- [🌐 Live Site](https://react-demo.tailadmin.com)
+- **Client Management**: Manage organisations and contacts with detailed profiles
+- **Website Management**: Track and manage client websites and hosting
+- **Project Management**: Oversee various project types including website, graphics, app, SEO, and content projects
+- **Support System**: Handle support tickets and client requests
+- **Task Management**: Organise and track tasks with Kanban board view
+- **Sales Tools**: Manage leads and generate quotes
+- **Dynamic Form Fields**: Form fields like dropdown values are stored in Firebase for easy updates
+- **Autocomplete Fields**: Smart input fields that allow selecting from existing values or adding new ones
 
-## Installation
+## Technology Stack
+
+- **Frontend**: React 18, TypeScript, Tailwind CSS 4
+- **State Management**: React Hooks and Context API
+- **Backend**: Firebase (Authentication, Firestore, Storage)
+- **Routing**: React Router 7
+- **UI Components**: Custom components built on TailAdmin Pro template
+- **Charts & Visualisations**: ApexCharts
+- **Forms**: Custom form components with validation
+- **Calendar**: FullCalendar integration
+
+## Installation & Setup
 
 ### Prerequisites
 
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
-
 - Node.js 18.x or later (recommended to use Node.js 20.x or later)
+- Firebase account with a configured project
 
 ### Getting Started
 
-1. Install dependencies:
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/jezweb-hub.git
+   cd jezweb-hub
+   ```
+
+2. Install dependencies:
 
    ```bash
    npm install --legacy-peer-deps
@@ -27,65 +48,110 @@ To get started with TailAdmin, ensure you have the following prerequisites insta
    yarn install
    ```
 
-   > Some included packages causes peer-deps issue with React 18 while installing.
+   > Some included packages cause peer-deps issues with React 18 while installing.
    >
    > With npm the `--legacy-peer-deps` flag is a workaround for that at the moment.
 
-2. Start the development server:
+3. Configure Firebase:
+
+   - Create a `.env` file in the root directory
+   - Add your Firebase configuration (see `.env.example` for reference)
+
+4. Start the development server:
 
    ```bash
-   npm start
+   npm run dev
    # or
-   yarn start
+   yarn dev
    ```
 
-   Runs the app in the development mode.\
-   Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+   This runs the app in development mode.\
+   Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
 
-## Changelog
+5. Build for production:
 
-### Version 2.0.1 - [February 27, 2025]
+   ```bash
+   npm run build
+   # or
+   yarn build
+   ```
 
-#### Update Overview
+## Project Structure
 
-- Upgraded to Tailwind CSS v4 for better performance and efficiency.
-- Updated class usage to match the latest syntax and features.
-- Replaced deprecated class and optimized styles.
+```mermaid
+graph TD
+    A[Jezweb Hub] --> B[Core Layout]
+    A --> C[Firebase Integration]
+    A --> D[Modules]
+    
+    B --> B1[AppLayout]
+    B --> B2[AppHeader]
+    B --> B3[AppSidebar]
+    
+    C --> C1[Authentication]
+    C --> C2[Firestore Services]
+    C --> C3[Storage Services]
+    
+    D --> D1[Clients]
+    D --> D2[Hosting]
+    D --> D3[Support]
+    D --> D4[Projects]
+    D --> D5[Sales]
+    D --> D6[Tasks]
+    D --> D7[Other Modules]
+    
+    D1 --> D1A[Organisations]
+    D1 --> D1B[Contacts]
+```
 
-#### Next Steps
+### Directory Structure
 
-- Run npm install or yarn install to update dependencies.
-- Check for any style changes or compatibility issues.
-- Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-- This update keeps the project up to date with the latest Tailwind improvements. 🚀
+- `/src`: Source code
+  - `/components`: Reusable UI components
+  - `/context`: React context providers
+  - `/firebase`: Firebase configuration and services
+  - `/hooks`: Custom React hooks
+  - `/layout`: Layout components
+  - `/pages`: Page components
+  - `/services`: Service modules for data operations
+  - `/types`: TypeScript type definitions
+  - `/utils`: Utility functions
 
-### Version 2.0.0 - [February 2025]
+## Usage
 
-A major update with comprehensive redesign and modern React patterns implementation.
+### Authentication
 
-#### Major Improvements
+The application requires authentication to access. Use the login page to sign in with your credentials.
 
-- Complete UI redesign with modern React patterns
-- New features: collapsible sidebar, chat, and calendar
-- Improved performance and accessibility
-- Updated data visualization using ApexCharts
+### Navigation
 
-#### Key Features
+The sidebar provides access to all main modules:
 
-- Redesigned dashboards (Ecommerce, Analytics, Marketing, CRM)
-- Enhanced navigation with React Router integration
-- Advanced tables with sorting and filtering
-- Calendar with drag-and-drop support
-- New UI components and improved existing ones
+- Dashboard: Overview and quick access
+- Clients: Manage organisations and contacts
+- Hosting: Manage websites
+- Support: Handle support tickets
+- Projects: Manage various project types
+- Sales: Track leads and quotes
+- Tasks: Manage and organise tasks
+- Settings: Configure application settings
 
-#### Breaking Changes
+### Form Fields Management
 
-- Updated sidebar component API
-- Migrated charts to ApexCharts
-- Revised authentication system
+Dynamic form fields (like dropdown values) can be managed from the Settings page. This allows administrators to add, edit, or remove options for various form fields throughout the application.
 
-[Read more](https://tailadmin.com/docs/update-logs/react) on the changelog.
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code follows the project's coding standards and includes appropriate tests.
 
 ## License
 
-Refer to our [LICENSE](https://tailadmin.com/license) page for more information.
+This project is proprietary software owned by Jezweb. All rights reserved.
