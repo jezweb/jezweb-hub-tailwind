@@ -1,21 +1,60 @@
-import React, { useState, useEffect } from 'react';
+# Websites Implementation Plan
+
+## Overview
+
+This plan outlines the steps to:
+1. Implement the full website management system based on the schema in `planning/websites-schema.md`
+2. Create a modular, extensible structure following the patterns used in the organisations and contacts features
+
+## File Structure - DONE!
+
+We'll create the following file structure for the Websites feature:
+
+```
+src/
+├── types/
+│   └── Website.ts                  # Website type definitions
+├── services/
+│   └── WebsiteService.ts           # Service for CRUD operations
+├── hooks/
+│   └── websites/
+│       ├── useWebsites.ts          # Main hook for website management
+│       └── useWebsiteWithOrganisation.ts  # Hook for website-organisation relationship
+├── pages/
+│   └── Websites/
+│       ├── index.tsx               # Main Websites page
+│       ├── WebsiteCreate.tsx       # Create new website page
+│       ├── WebsiteEdit.tsx         # Edit website page
+│       ├── WebsiteDetails.tsx      # Website details page
+│       └── components/             # Website-specific components
+│           ├── WebsiteCard.tsx     # Card view component
+│           ├── WebsiteTable.tsx    # Table view component
+│           ├── WebsiteForm.tsx     # Form for create/edit
+│           └── WebsiteDetail.tsx   # Detail view component
+```
+
+## Implementation Steps
+
+
+### 1. Update Main Websites Page (index.tsx) - check if done, might be partly done
+
+modify it to use the new hooks and components:
+
+```typescript
+import React, { useState, useEffect } from "react";
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { useWebsitesWithOrganisations } from '../../hooks/websites/useWebsitesWithOrganisations';
-import WebsiteCard from './components/WebsiteCard';
-import WebsiteTable from './components/WebsiteTable';
-
-// Add diagnostic logs
-console.log('Websites component loaded');
-console.log('useWebsitesWithOrganisations imported:', typeof useWebsitesWithOrganisations);
-console.log('WebsiteCard imported:', typeof WebsiteCard);
-console.log('WebsiteTable imported:', typeof WebsiteTable);
+import { useWebsitesWithOrganisations } from "../../hooks/websites/useWebsitesWithOrganisations";
+import WebsiteCard from "./components/WebsiteCard";
+import WebsiteTable from "./components/WebsiteTable";
 
 /**
- * Websites Component
- *
- * This component displays a list of websites managed by the organization.
- * It provides functionality for viewing, creating, updating, and managing websites.
+ * Websites Page Component
+ * 
+ * This component displays and manages client websites in the Jezweb Hub system.
+ * It provides functionality for viewing, filtering, and managing websites.
+ * 
+ * @returns {JSX.Element} The rendered Websites page
  */
 const Websites: React.FC = () => {
   // Get websites data and actions from the hook
@@ -38,14 +77,12 @@ const Websites: React.FC = () => {
   
   // Load websites when component mounts
   useEffect(() => {
-    console.log('Fetching websites with organisations');
     fetchWebsitesWithOrganisations();
   }, [fetchWebsitesWithOrganisations]);
   
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Searching for:', searchTerm);
     if (searchTerm.trim()) {
       searchWebsitesWithOrganisations(searchTerm);
     } else {
@@ -55,7 +92,6 @@ const Websites: React.FC = () => {
   
   // Filter websites based on selected filters
   const filteredWebsites = websites.filter(website => {
-    console.log('Filtering website:', website.domain);
     // Filter by organisation
     if (organisationFilter && website.organisation?.organisationId !== organisationFilter) {
       return false;
@@ -138,7 +174,7 @@ const Websites: React.FC = () => {
               </button>
             </form>
             <div>
-              <select
+              <select 
                 aria-label="Filter by organisation"
                 value={organisationFilter}
                 onChange={(e) => setOrganisationFilter(e.target.value)}
@@ -151,7 +187,7 @@ const Websites: React.FC = () => {
               </select>
             </div>
             <div>
-              <select
+              <select 
                 aria-label="Filter by platform"
                 value={platformFilter}
                 onChange={(e) => setPlatformFilter(e.target.value)}
@@ -164,7 +200,7 @@ const Websites: React.FC = () => {
               </select>
             </div>
             <div>
-              <select
+              <select 
                 aria-label="Filter by status"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -324,3 +360,44 @@ const Websites: React.FC = () => {
 };
 
 export default Websites;
+```
+
+### 2. Update App Routing
+
+Ensure the routing is set up correctly for the new Websites pages. This would typically be in a file like `src/App.tsx` or a dedicated router file.
+
+
+## Mermaid Diagram
+
+Here's a diagram showing the relationship between the different components:
+
+```mermaid
+graph TD
+    A[Website.ts] --> B[WebsiteService.ts]
+    B --> C[useWebsites.ts]
+    B --> D[useWebsitesWithOrganisations.ts]
+    C --> D
+    D --> E[Websites/index.tsx]
+    D --> F[WebsiteDetails.tsx]
+    C --> G[WebsiteCreate.tsx]
+    C --> H[WebsiteEdit.tsx]
+    E --> I[WebsiteCard.tsx]
+    E --> J[WebsiteTable.tsx]
+    G --> K[WebsiteForm.tsx]
+    H --> K
+```
+
+This diagram shows how the data flows from the type definitions to the service, then to the hooks, and finally to the components.
+
+## Conclusion
+
+This implementation plan provides a comprehensive approach to building the Websites feature based on the schema in `planning/websites-schema.md`. It follows the patterns used in the organisations and contacts features, ensuring consistency across the application.
+
+The plan includes:
+- Type definitions for the Website entity and related interfaces
+- A service for CRUD operations on websites
+- Hooks for managing website data and state
+- Components for displaying and editing websites
+- Page components for the different views (list, create, edit, details)
+
+By following this plan, you'll have a fully functional Websites feature that integrates with the rest of the application and provides a consistent user experience.
