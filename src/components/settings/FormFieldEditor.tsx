@@ -13,7 +13,7 @@
 
 import React, { useState } from 'react';
 import { useFormFields } from '../../hooks/useFormFields';
-import { FormFieldValue } from '../../services/FormFieldsService';
+import { FieldValue } from '../../services/FormFieldsService';
 import Button from '../ui/button/Button';
 import Input from '../form/input/InputField';
 import Label from '../form/Label';
@@ -21,12 +21,13 @@ import Alert from '../ui/alert/Alert';
 
 interface FormFieldEditorProps {
   fieldType: string; // The type of field to edit (e.g., 'contactRoles')
+  displayName?: string; // Optional display name for the field type
 }
 
 /**
  * FormFieldEditor component for managing form field values
  */
-const FormFieldEditor: React.FC<FormFieldEditorProps> = ({ fieldType }) => {
+const FormFieldEditor: React.FC<FormFieldEditorProps> = ({ fieldType, displayName }) => {
   const { 
     fieldValues, 
     loading, 
@@ -80,7 +81,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({ fieldType }) => {
     if (!editValue.trim() || !editLabel.trim()) return;
     
     const oldValue = fieldValues[index];
-    const newValue: FormFieldValue = {
+    const newValue: FieldValue = {
       ...oldValue,
       value: editValue,
       label: editLabel
@@ -98,7 +99,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({ fieldType }) => {
   /**
    * Handle deleting a field value
    */
-  const handleDeleteValue = async (value: FormFieldValue) => {
+  const handleDeleteValue = async (value: FieldValue) => {
     // Confirm deletion
     if (!window.confirm(`Are you sure you want to delete "${value.label}"?`)) {
       return;
@@ -168,8 +169,16 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({ fieldType }) => {
       {/* Add new value form */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg dark:bg-gray-800">
         <h3 className="mb-4 font-semibold text-gray-800 dark:text-white">
-          Add New {fieldType === 'contactRoles' ? 'Role' : 
-                   fieldType === 'contactStatuses' ? 'Status' : 'Industry'}
+          Add New {displayName ||
+                   (fieldType === 'contactRoles' ? 'Role' :
+                   fieldType === 'contactStatuses' ? 'Status' :
+                   fieldType === 'industries' ? 'Industry' :
+                   fieldType === 'websiteStatuses' ? 'Website Status' :
+                   fieldType === 'hostingProviders' ? 'Hosting Provider' :
+                   fieldType === 'cmsTypes' ? 'CMS Type' :
+                   fieldType === 'leadSource' ? 'Lead Source' :
+                   fieldType === 'leadStatus' ? 'Lead Status' :
+                   fieldType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()))}
         </h3>
         
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

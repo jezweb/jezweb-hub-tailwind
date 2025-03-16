@@ -1,12 +1,17 @@
 /**
  * FormFieldsManager Component
- * 
+ *
  * This component provides a tabbed interface for managing different types of form fields.
+ * It uses a vertical tab layout to accommodate a growing number of field types.
+ * 
  * It allows administrators to view, add, edit, and delete field values for:
  * - Contact Roles
  * - Contact Statuses
  * - Industries
- * 
+ * - Website Statuses
+ * - Hosting Providers
+ * - CMS Types
+ *
  * Each tab uses the FormFieldEditor component to manage the specific field type.
  */
 
@@ -27,7 +32,12 @@ const FormFieldsManager: React.FC<FormFieldsManagerProps> = () => {
   const tabs = [
     { id: 'contactRoles', label: 'Contact Roles' },
     { id: 'contactStatuses', label: 'Contact Statuses' },
-    { id: 'industries', label: 'Industries' }
+    { id: 'industries', label: 'Industries' },
+    { id: 'websiteStatuses', label: 'Website Statuses' },
+    { id: 'hostingProviders', label: 'Hosting Providers' },
+    { id: 'cmsTypes', label: 'CMS Types' },
+    { id: 'leadSource', label: 'Lead Sources' },
+    { id: 'leadStatus', label: 'Lead Statuses' }
   ];
   
   // Handle tab click
@@ -36,48 +46,77 @@ const FormFieldsManager: React.FC<FormFieldsManagerProps> = () => {
   };
   
   return (
-    <div className="rounded-2xl border border-stroke bg-white p-6 shadow-default dark:border-gray-800 dark:bg-white/[0.03]">
-      <h2 className="mb-6 font-semibold text-gray-800 text-theme-xl dark:text-white/90 sm:text-2xl">
+    <div className="rounded-2xl border border-stroke bg-white shadow-default dark:border-gray-800 dark:bg-white/[0.03]">
+      <h2 className="p-6 font-semibold text-gray-800 text-theme-xl dark:text-white/90 sm:text-2xl border-b border-gray-200 dark:border-gray-700">
         Form Fields Manager
       </h2>
       
-      {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-        <ul className="flex flex-wrap -mb-px" role="tablist">
-          {tabs.map(tab => (
-            <li key={tab.id} className="mr-2" role="presentation">
-              <button
-                onClick={() => handleTabClick(tab.id)}
-                className={`inline-block p-4 border-b-2 rounded-t-lg ${
-                  activeTab === tab.id
-                    ? 'text-primary border-primary dark:text-primary dark:border-primary'
-                    : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'
-                }`}
-                id={`tab-${tab.id}`}
-                role="tab"
-                aria-controls={`panel-${tab.id}`}
-                aria-selected="false"
-                type="button"
-              >
-                {tab.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-      
-      {/* Tab content */}
-      {tabs.map(tab => (
-        <div
-          key={tab.id}
-          id={`panel-${tab.id}`}
-          role="tabpanel"
-          aria-labelledby={`tab-${tab.id}`}
-          className={activeTab === tab.id ? 'block' : 'hidden'}
-        >
-          <FormFieldEditor fieldType={tab.id} />
+      <div className="flex flex-col md:flex-row">
+        {/* Vertical Tabs */}
+        <div className="w-full md:w-1/4 border-r border-gray-200 dark:border-gray-700">
+          <ul className="flex flex-col" role="tablist">
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              return (
+                <li key={tab.id} role="presentation">
+                  {isActive ? (
+                    <button
+                      onClick={() => handleTabClick(tab.id)}
+                      className="w-full text-left px-6 py-4 border-l-4 border-primary bg-gray-50 text-primary dark:bg-gray-800 dark:text-primary"
+                      id={`tab-${tab.id}`}
+                      role="tab"
+                      aria-controls={`panel-${tab.id}`}
+                      aria-selected="true"
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleTabClick(tab.id)}
+                      className="w-full text-left px-6 py-4 border-l-4 border-transparent hover:bg-gray-50 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                      id={`tab-${tab.id}`}
+                      role="tab"
+                      aria-controls={`panel-${tab.id}`}
+                      aria-selected="false"
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
-      ))}
+        
+        {/* Tab content */}
+        <div className="w-full md:w-3/4 p-6">
+          {tabs.map(tab => (
+            <div
+              key={tab.id}
+              id={`panel-${tab.id}`}
+              role="tabpanel"
+              aria-labelledby={`tab-${tab.id}`}
+              className={activeTab === tab.id ? 'block' : 'hidden'}
+            >
+              <h3 className="mb-4 font-semibold text-xl text-gray-800 dark:text-white">
+                {tab.label}
+              </h3>
+              <FormFieldEditor
+                fieldType={tab.id}
+                displayName={tab.id === 'websiteStatuses' ? 'Website Status' :
+                             tab.id === 'hostingProviders' ? 'Hosting Provider' :
+                             tab.id === 'cmsTypes' ? 'CMS Type' :
+                             tab.id === 'contactRoles' ? 'Role' :
+                             tab.id === 'contactStatuses' ? 'Status' :
+                             tab.id === 'leadSource' ? 'Lead Source' :
+                             tab.id === 'leadStatus' ? 'Lead Status' : 'Industry'}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

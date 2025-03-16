@@ -8,7 +8,7 @@
  * dynamic form field options that can be managed through the FormFieldsManager.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   getFieldValues,
   addFieldValue as addFieldValueService,
@@ -174,11 +174,11 @@ export const useFormFields = (initialFieldType?: string) => {
   }, []);
   
   // Fetch initial field values if initialFieldType is provided
-  useState(() => {
+  useEffect(() => {
     if (initialFieldType) {
       fetchFieldValues(initialFieldType);
     }
-  });
+  }, [initialFieldType, fetchFieldValues]);
   
   return {
     fieldValues,

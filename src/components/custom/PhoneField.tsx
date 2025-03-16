@@ -63,6 +63,20 @@ const PhoneField: React.FC<PhoneFieldProps> = ({
   const [value, setValue] = useState<string>(initialValue);
   const [isValid, setIsValid] = useState<boolean>(true);
   
+  // Debug log for initialValue
+  useEffect(() => {
+    console.log(`PhoneField initialValue: "${initialValue}"`);
+  }, []);
+  
+  // Update value when initialValue changes
+  useEffect(() => {
+    if (initialValue && initialValue !== value) {
+      console.log(`PhoneField updating value from initialValue: "${initialValue}"`);
+      setValue(initialValue);
+      setIsValid(validatePhone(initialValue));
+    }
+  }, [initialValue]);
+  
   // Validate phone number format
   const validatePhone = (phone: string): boolean => {
     if (!phone && !required) return true;
@@ -98,6 +112,7 @@ const PhoneField: React.FC<PhoneFieldProps> = ({
           onChange={handlePhoneChange}
           selectPosition={selectPosition}
           defaultCountry={defaultCountry}
+          initialValue={value}
         />
       </div>
       

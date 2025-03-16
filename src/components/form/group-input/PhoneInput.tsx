@@ -11,6 +11,7 @@ interface PhoneInputProps {
   onChange?: (phoneNumber: string) => void;
   defaultCountry?: string; // New prop for default country code
   selectPosition?: "start" | "end"; // New prop for dropdown position
+  initialValue?: string; // New prop for initial phone number
 }
 
 const PhoneInput: React.FC<PhoneInputProps> = ({
@@ -18,22 +19,38 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   placeholder = "+1 (555) 000-0000",
   onChange,
   defaultCountry = "AU", // Default to Australia
-  selectPosition = "start", // Default position is 'start'
+  selectPosition = "start", // Default position is 'start',
+  initialValue = "",
 }) => {
   const [selectedCountry, setSelectedCountry] = useState<string>(defaultCountry);
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>(initialValue);
 
   const countryCodes: Record<string, string> = countries.reduce(
     (acc, { code, label }) => ({ ...acc, [code]: label }),
     {}
   );
 
-  // Set initial phone number based on default country on component mount
+  // Set initial phone number based on initialValue or default country on component mount
   useEffect(() => {
-    if (countryCodes[defaultCountry] && phoneNumber === "") {
+    // If initialValue is provided, use it
+    if (initialValue) {
+      console.log(`PhoneInput using initialValue: "${initialValue}"`);
+      setPhoneNumber(initialValue);
+    }
+    // Otherwise, use the country code if phone number is empty
+    else if (countryCodes[defaultCountry] && phoneNumber === "") {
+      console.log(`PhoneInput using default country code: "${countryCodes[defaultCountry]}"`);
       setPhoneNumber(countryCodes[defaultCountry]);
     }
-  }, [countryCodes, defaultCountry, phoneNumber]);
+  }, [countryCodes, defaultCountry, phoneNumber, initialValue]);
+  
+  // Update phone number when initialValue changes
+  useEffect(() => {
+    if (initialValue && initialValue !== phoneNumber) {
+      console.log(`PhoneInput updating from initialValue change: "${initialValue}"`);
+      setPhoneNumber(initialValue);
+    }
+  }, [initialValue]);
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCountry = e.target.value;
