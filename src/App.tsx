@@ -43,10 +43,16 @@ import {
 } from "./pages/Projects/index";
 import Clients from "./pages/Clients";
 import Websites from "./pages/Websites";
+import WebsiteCreate from "./pages/Websites/WebsiteCreate";
+import WebsiteDetails from "./pages/Websites/WebsiteDetails";
+import WebsiteEdit from "./pages/Websites/WebsiteEdit";
 import Tickets from "./pages/Tickets";
 import Notes from "./pages/Notes";
 import Events from "./pages/Events";
-import Leads from "./pages/Leads";
+import LeadsPage from "./pages/leads";
+import LeadCreate from "./pages/leads/LeadCreate";
+import LeadView from "./pages/leads/LeadView";
+import LeadEdit from "./pages/leads/LeadEdit";
 import Contacts from "./pages/contacts";
 import ContactCreate from "./pages/contacts/ContactCreate";
 import ContactView from "./pages/contacts/ContactView";
@@ -74,8 +80,7 @@ import FiveZeroZero from "./pages/OtherPage/FiveZeroZero";
 import FiveZeroThree from "./pages/OtherPage/FiveZeroThree";
 import ComingSoon from "./pages/OtherPage/ComingSoon";
 import Success from "./pages/OtherPage/Success";
-import SettingsPage from "./pages/settings/SettingsPage";
-import FormFieldsManager from "./pages/settings/FormFieldsManager";
+import DropdownLists from "./pages/settings/DropdownLists";
 
 // UI Elements
 import Carousel from "./pages/UiElements/Carousel";
@@ -157,10 +162,16 @@ export default function App() {
             </Route>
             <Route path="/clients" element={<Clients />} />
             <Route path="/websites" element={<Websites />} />
+            <Route path="/websites/create" element={<WebsiteCreate />} />
+            <Route path="/websites/:websiteId" element={<WebsiteDetails />} />
+            <Route path="/websites/edit/:websiteId" element={<WebsiteEdit />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/notes" element={<Notes />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/leads" element={<Leads />} />
+            <Route path="/leads" element={<LeadsPage />} />
+            <Route path="/leads/create" element={<LeadCreate />} />
+            <Route path="/leads/:leadId" element={<LeadView />} />
+            <Route path="/leads/:leadId/edit" element={<LeadEdit />} />
             <Route path="/contacts" element={<Contacts />} />
             <Route path="/contacts/new" element={<ContactCreate />} />
             <Route path="/contacts/:id" element={<ContactView />} />
@@ -179,8 +190,7 @@ export default function App() {
             <Route path="/invoice" element={<Invoices />} />
             <Route path="/faq" element={<Faqs />} />
             <Route path="/pricing-tables" element={<PricingTables />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/settings/form-fields" element={<FormFieldsManager />} />
+            <Route path="/settings" element={<DropdownLists />} />
             <Route path="/blank" element={<Blank />} />
 
             {/* Forms */}

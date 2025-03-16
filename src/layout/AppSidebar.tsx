@@ -120,8 +120,7 @@ const navItems: NavItem[] = [
     name: "Settings",
     icon: <PlugInIcon />,
     subItems: [
-      { name: "General Settings", path: "/settings" },
-      { name: "Form Fields", path: "/settings/form-fields" },
+      { name: "Dropdown Lists", path: "/settings" },
     ],
   },
 ];
