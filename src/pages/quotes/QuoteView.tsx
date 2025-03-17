@@ -12,6 +12,9 @@ import { useQuotes } from '../../hooks/quotes/useQuotes';
 import { useQuotesWithOrganisations } from '../../hooks/quotes/useQuotesWithOrganisations';
 import { useQuotesWithContacts } from '../../hooks/quotes/useQuotesWithContacts';
 import { useQuotesWithLeads } from '../../hooks/quotes/useQuotesWithLeads';
+import { useOrganisations } from '../../hooks/organisations/useOrganisations';
+import { useContacts } from '../../hooks/contacts/useContacts';
+import { useLeads } from '../../hooks/leads/useLeads';
 import QuoteDetail from './components/QuoteDetail';
 import QuoteOrganisationForm from './components/QuoteOrganisationForm';
 import QuoteContactForm from './components/QuoteContactForm';
@@ -55,13 +58,26 @@ const QuoteView: React.FC = () => {
     unlinkQuoteFromLead
   } = useQuotesWithLeads();
   
-  // Mock data for organisations, contacts, and leads (to be replaced with actual data)
-  const [organisations, setOrganisations] = useState<any[]>([]);
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [leads, setLeads] = useState<any[]>([]);
-  const [loadingOrganisations, setLoadingOrganisations] = useState<boolean>(false);
-  const [loadingContacts, setLoadingContacts] = useState<boolean>(false);
-  const [loadingLeads, setLoadingLeads] = useState<boolean>(false);
+  // Get organisations data
+  const {
+    organisations,
+    loading: loadingOrganisations,
+    fetchOrganisations
+  } = useOrganisations();
+  
+  // Get contacts data
+  const {
+    contacts,
+    loading: loadingContacts,
+    fetchContacts
+  } = useContacts();
+  
+  // Get leads data
+  const {
+    leads,
+    loading: loadingLeads,
+    fetchLeads
+  } = useLeads();
   
   // Fetch quote data on component mount
   useEffect(() => {
@@ -69,6 +85,13 @@ const QuoteView: React.FC = () => {
       fetchQuoteById(quoteId);
     }
   }, [quoteId, fetchQuoteById]);
+  
+  // Fetch organisations, contacts, and leads data on component mount
+  useEffect(() => {
+    fetchOrganisations();
+    fetchContacts();
+    fetchLeads();
+  }, [fetchOrganisations, fetchContacts, fetchLeads]);
   
   // Handle edit quote action
   const handleEditQuote = (quoteId: string) => {

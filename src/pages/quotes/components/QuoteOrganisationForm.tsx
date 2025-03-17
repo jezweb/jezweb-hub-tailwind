@@ -51,7 +51,7 @@ const QuoteOrganisationForm: React.FC<QuoteOrganisationFormProps> = ({
         throw new Error('Selected organisation not found');
       }
       
-      await onLinkOrganisation(quote.quoteId, selectedOrganisationId, selectedOrganisation.name);
+      await onLinkOrganisation(quote.quoteId, selectedOrganisationId, selectedOrganisation.organisationName);
       setSelectedOrganisationId('');
     } catch (err) {
       console.error('Error linking organisation to quote:', err);
@@ -137,7 +137,7 @@ const QuoteOrganisationForm: React.FC<QuoteOrganisationFormProps> = ({
               ) : (
                 organisations.map((org) => (
                   <option key={org.organisationId} value={org.organisationId}>
-                    {org.name}
+                    {org.organisationName}
                   </option>
                 ))
               )}
