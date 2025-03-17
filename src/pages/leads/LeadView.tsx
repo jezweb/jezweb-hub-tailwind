@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLeads } from '../../hooks/leads/useLeads';
 import { useLeadsWithOrganisations } from '../../hooks/leads/useLeadsWithOrganisations';
 import { useLeadsWithContacts } from '../../hooks/leads/useLeadsWithContacts';
+import { useOrganisations } from '../../hooks/organisations/useOrganisations';
+import { useContacts } from '../../hooks/contacts/useContacts';
 import LeadDetail from './components/LeadDetail';
 import LeadOrganisationForm from './components/LeadOrganisationForm';
 import LeadContactForm from './components/LeadContactForm';
@@ -39,18 +41,45 @@ const LeadView: React.FC = () => {
     unlinkLeadFromContact
   } = useLeadsWithContacts();
   
-  // Mock data for organisations and contacts (to be replaced with actual data)
-  const [organisations, setOrganisations] = useState<any[]>([]);
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [loadingOrganisations, setLoadingOrganisations] = useState<boolean>(false);
-  const [loadingContacts, setLoadingContacts] = useState<boolean>(false);
+  // Organisation data and operations
+  const {
+    organisations,
+    loading: loadingOrganisations,
+    fetchOrganisations,
+    searchOrganisations
+  } = useOrganisations();
+  
+  // Contact data and operations
+  const {
+    contacts,
+    loading: loadingContacts,
+    fetchContacts,
+    searchContacts
+  } = useContacts();
   
   // Fetch lead data on component mount
   useEffect(() => {
     if (leadId) {
       fetchLeadById(leadId);
+      
+      // Fetch organisations and contacts
+      fetchOrganisations();
+      fetchContacts();
     }
-  }, [leadId, fetchLeadById]);
+  }, [leadId, fetchLeadById, fetchOrganisations, fetchContacts]);
+  
+  // Map organisations to the format expected by LeadOrganisationForm
+  const mappedOrganisations = organisations.map(org => ({
+    organisationId: org.organisationId,
+    name: org.organisationName
+  }));
+  
+  // Map contacts to the format expected by LeadContactForm
+  const mappedContacts = contacts.map(contact => ({
+    contactId: contact.contactId,
+    fullName: contact.fullName,
+    email: contact.email
+  }));
   
   // Handle edit lead action
   const handleEditLead = (leadId: string) => {
@@ -72,9 +101,16 @@ const LeadView: React.FC = () => {
   // Handle link to organisation action
   const handleLinkOrganisation = async (leadId: string, organisationId: string) => {
     try {
-      // Get organisation name (in a real implementation, this would fetch from the database)
-      const organisationName = "Organisation Name"; // Placeholder
-      await linkLeadToOrganisation(leadId, organisationId, organisationName);
+      // Find the organisation in the organisations array
+      const organisation = organisations.find(org => org.organisationId === organisationId);
+      
+      if (!organisation) {
+        throw new Error('Organisation not found');
+      }
+      
+      // Use the actual organisation name
+      await linkLeadToOrganisation(leadId, organisationId, organisation.organisationName);
+      
       // Refresh lead data
       fetchLeadById(leadId);
     } catch (error) {
@@ -100,15 +136,25 @@ const LeadView: React.FC = () => {
     try {
       // Link each contact individually
       for (const contactId of contactIds) {
-        // In a real implementation, this would fetch contact details from the database
+        // Find the contact in the contacts array
+        const contact = contacts.find(c => c.contactId === contactId);
+        
+        if (!contact) {
+          console.error(`Contact with ID ${contactId} not found`);
+          continue;
+        }
+        
+        // Use the actual contact details
         const contactDetails = {
-          fullName: "Contact Name", // Placeholder
-          email: "contact@example.com", // Placeholder
-          phone: "", // Optional
-          jobTitle: "" // Optional
+          fullName: contact.fullName,
+          email: contact.email,
+          phone: contact.phone || '',
+          jobTitle: contact.jobTitle || ''
         };
+        
         await linkLeadToContact(leadId, contactId, contactDetails);
       }
+      
       // Refresh lead data
       fetchLeadById(leadId);
     } catch (error) {
@@ -189,7 +235,7 @@ const LeadView: React.FC = () => {
           {/* Organisation Form */}
           <LeadOrganisationForm
             lead={selectedLead}
-            organisations={organisations}
+            organisations={mappedOrganisations}
             isLoading={loadingOrganisations}
             onLinkOrganisation={handleLinkOrganisation}
             onUnlinkOrganisation={handleUnlinkOrganisation}
@@ -198,7 +244,7 @@ const LeadView: React.FC = () => {
           {/* Contact Form */}
           <LeadContactForm
             lead={selectedLead}
-            contacts={contacts}
+            contacts={mappedContacts}
             isLoading={loadingContacts}
             onLinkContacts={handleLinkContacts}
             onUnlinkContact={handleUnlinkContact}

@@ -37,7 +37,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
     source: '',
     status: 'new',
     notes: '',
-    organisationId: undefined,
+    organisationId: null,
     contactIds: []
   });
   

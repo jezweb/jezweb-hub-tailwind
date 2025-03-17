@@ -19,14 +19,32 @@ const leadsCollection = collection(db, 'leads');
  */
 export const createLead = async (leadData: LeadFormData): Promise<string> => {
   try {
-    // Add created timestamp
-    const leadWithTimestamp = {
-      ...leadData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
+    // Process the data to handle undefined values
+    const processedData: Record<string, any> = {};
     
-    const docRef = await addDoc(leadsCollection, leadWithTimestamp);
+    // Copy all defined values to the processed data
+    Object.entries(leadData).forEach(([key, value]) => {
+      // Skip undefined values as Firestore doesn't accept them
+      if (value !== undefined) {
+        processedData[key] = value;
+      }
+    });
+    
+    // Handle nested contactPerson object
+    if (leadData.contactPerson) {
+      processedData.contactPerson = {};
+      Object.entries(leadData.contactPerson).forEach(([key, value]) => {
+        if (value !== undefined) {
+          processedData.contactPerson[key] = value;
+        }
+      });
+    }
+    
+    // Add timestamps
+    processedData.createdAt = serverTimestamp();
+    processedData.updatedAt = serverTimestamp();
+    
+    const docRef = await addDoc(leadsCollection, processedData);
     return docRef.id;
   } catch (error) {
     console.error('Error creating lead:', error);
@@ -113,13 +131,30 @@ export const getLeads = async (
  */
 export const updateLead = async (leadId: string, leadData: Partial<LeadFormData>): Promise<void> => {
   try {
-    // Add updated timestamp
-    const leadWithTimestamp = {
-      ...leadData,
+    // Process the data to handle undefined values
+    const processedData: Record<string, any> = {
       updatedAt: serverTimestamp()
     };
     
-    await updateDoc(doc(leadsCollection, leadId), leadWithTimestamp);
+    // Copy all defined values to the processed data
+    Object.entries(leadData).forEach(([key, value]) => {
+      // Skip undefined values as Firestore doesn't accept them
+      if (value !== undefined) {
+        processedData[key] = value;
+      }
+    });
+    
+    // Handle nested contactPerson object if it exists
+    if (leadData.contactPerson) {
+      processedData.contactPerson = {};
+      Object.entries(leadData.contactPerson).forEach(([key, value]) => {
+        if (value !== undefined) {
+          processedData.contactPerson[key] = value;
+        }
+      });
+    }
+    
+    await updateDoc(doc(leadsCollection, leadId), processedData);
   } catch (error) {
     console.error(`Error updating lead ${leadId}:`, error);
     throw error;
