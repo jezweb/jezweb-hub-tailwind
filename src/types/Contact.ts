@@ -9,6 +9,8 @@
  */
 
 import { Timestamp } from 'firebase/firestore';
+import { ContactOrganisation } from './ContactOrganisation';
+import { ContactLead } from './ContactLead';
 
 /**
  * Contact interface representing an individual contact person
@@ -33,6 +35,8 @@ export interface Contact {
   image?: string;             // Optional: Profile image URL
   color?: string;             // Optional: Color for visual identification
   icon?: string;              // Optional: Icon for visual identification
+  organisations?: ContactOrganisation[]; // Optional: Associated organisations
+  leads?: ContactLead[];      // Optional: Associated leads
   createdAt: Timestamp;       // Creation timestamp
   updatedAt: Timestamp;       // Last update timestamp
 }

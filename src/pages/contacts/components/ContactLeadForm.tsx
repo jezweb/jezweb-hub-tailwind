@@ -1,233 +1,175 @@
 /**
  * ContactLeadForm Component
  * 
- * This component provides a form for managing leads associated with a contact.
- * It displays the current associated leads and allows users to view lead details.
+ * This component provides functionality to link and unlink leads to a contact.
+ * It displays a list of currently associated leads and a form to add new ones.
  * 
  * Features:
- * - Displays current associated leads
- * - Provides links to view lead details
- * - Shows lead status and creation date
+ * - Displays currently linked leads with their details
+ * - Provides a form to search and select leads to link
+ * - Handles loading states and empty states
+ * - Supports unlinking leads from the contact
  */
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Timestamp } from 'firebase/firestore';
+import React, { useState } from 'react';
 import { Contact } from '../../../types/Contact';
 import { Lead } from '../../../types/Lead';
 
-/**
- * ContactLeadForm component props
- */
 interface ContactLeadFormProps {
   contact: Contact;
   leads: Lead[];
   isLoading: boolean;
+  onLinkLead: (contactId: string, leadId: string) => Promise<void>;
+  onUnlinkLead: (relationshipId: string) => Promise<void>;
 }
 
-/**
- * ContactLeadForm component
- */
 const ContactLeadForm: React.FC<ContactLeadFormProps> = ({
   contact,
   leads,
-  isLoading
+  isLoading,
+  onLinkLead,
+  onUnlinkLead
 }) => {
-  // State for associated leads
-  const [associatedLeads, setAssociatedLeads] = useState<Lead[]>([]);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  
-  // Filter leads associated with this contact
-  useEffect(() => {
-    if (leads && leads.length > 0) {
-      // Filter leads where the contact is associated with the lead
-      const filteredLeads = leads.filter(lead =>
-        lead.contactIds?.includes(contact.contactId)
-      );
-      setAssociatedLeads(filteredLeads);
-    }
-  }, [leads, contact.contactId]);
-  
-  // Toggle expanded state
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-  };
-  
-  // Format date
-  const formatDate = (timestamp: Timestamp) => {
-    if (!timestamp) return 'N/A';
+  // State for form inputs
+  const [selectedLeadId, setSelectedLeadId] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filter out already linked leads
+  const availableLeads = leads.filter(lead => {
+    // Check if the lead is already linked to the contact
+    return !contact.leads?.some(
+      linkedLead => linkedLead.leadId === lead.leadId
+    );
+  });
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (!selectedLeadId) {
+      setError('Please select a lead');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      return timestamp.toDate().toLocaleDateString();
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Invalid date';
+      await onLinkLead(
+        contact.contactId,
+        selectedLeadId
+      );
+      
+      // Reset form
+      setSelectedLeadId('');
+    } catch (err) {
+      setError('Failed to link lead. Please try again.');
+      console.error('Error linking lead:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
+
+  // Handle unlinking a lead
+  const handleUnlink = async (relationshipId: string, leadName: string) => {
+    if (window.confirm(`Are you sure you want to remove ${contact.fullName} from ${leadName}?`)) {
+      try {
+        await onUnlinkLead(relationshipId);
+      } catch (err) {
+        console.error('Error unlinking lead:', err);
+      }
+    }
+  };
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Leads</h3>
-        <button
-          onClick={toggleExpanded}
-          className="text-gray-500 hover:text-primary"
-          aria-label={isExpanded ? "Collapse section" : "Expand section"}
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {isExpanded ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 15l7-7 7 7"
-              ></path>
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            )}
-          </svg>
-        </button>
-      </div>
+      <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">Leads</h3>
       
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex justify-center items-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      )}
-      
-      {/* No Leads State */}
-      {!isLoading && associatedLeads.length === 0 && (
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-          No leads associated with this contact
-        </p>
-      )}
-      
-      {/* Associated Leads */}
-      {!isLoading && associatedLeads.length > 0 && (
-        <div className="space-y-3 mb-4">
-          {associatedLeads.map((lead) => (
-            <div
-              key={lead.leadId}
-              className="bg-gray-100 dark:bg-gray-700 rounded p-3"
+      {/* Display linked leads */}
+      {contact.leads && contact.leads.length > 0 ? (
+        <div className="mb-4 space-y-2">
+          {contact.leads.map((lead) => (
+            <div 
+              key={lead.relationshipId} 
+              className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-700"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <Link
-                    to={`/leads/${lead.leadId}`}
-                    className="font-medium text-black dark:text-white hover:text-primary"
-                  >
-                    {`Lead for ${lead.contactPerson.fullName}`}
-                  </Link>
-                  <div className="flex items-center mt-1">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                      lead.status === 'new' 
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' 
-                        : lead.status === 'qualified'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : lead.status === 'disqualified'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                    }`}>
-                      {lead.status}
-                    </span>
-                    <span className="text-xs text-gray-600 dark:text-gray-400 ml-2">
-                      Created: {formatDate(lead.createdAt)}
-                    </span>
-                  </div>
-                </div>
-                <Link
-                  to={`/leads/${lead.leadId}`}
-                  className="text-gray-500 hover:text-primary"
-                  aria-label="View lead"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    ></path>
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    ></path>
-                  </svg>
-                </Link>
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {lead.leadName}
+                </p>
+                {lead.role && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Role: {lead.role}
+                    {lead.isPrimary && ' (Primary)'}
+                  </p>
+                )}
               </div>
+              <button
+                type="button"
+                onClick={() => handleUnlink(lead.relationshipId, lead.leadName)}
+                className="ml-2 inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Remove
+              </button>
             </div>
           ))}
         </div>
+      ) : (
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          No leads linked to this contact.
+        </p>
       )}
-      
-      {/* Create New Lead Link */}
-      {isExpanded && (
-        <div className="mt-4">
-          <Link
-            to={`/leads/new?contactId=${contact.contactId}`}
-            className="inline-flex items-center justify-center w-full rounded-md bg-primary py-2 px-4 text-sm font-medium text-white hover:bg-opacity-90"
+
+      {/* Form to add new lead */}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="lead" className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+            Add to Lead
+          </label>
+          <select
+            id="lead"
+            value={selectedLeadId}
+            onChange={(e) => setSelectedLeadId(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+            disabled={isLoading || isSubmitting || availableLeads.length === 0}
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Create New Lead
-          </Link>
+            <option value="">Select a lead</option>
+            {availableLeads.map((lead) => (
+              <option key={lead.leadId} value={lead.leadId}>
+                {lead.contactPerson.fullName || lead.organisationName || lead.leadId}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
-      
-      {/* View All Leads Link */}
-      {!isExpanded && associatedLeads.length > 0 && (
-        <div className="mt-4 text-center">
-          <Link
-            to="/leads"
-            className="inline-flex items-center text-sm text-primary hover:underline"
-          >
-            View All Leads
-            <svg
-              className="w-4 h-4 ml-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5l7 7-7 7"
-              ></path>
-            </svg>
-          </Link>
-        </div>
-      )}
+
+        {error && (
+          <div className="mb-3 rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className="inline-flex w-full items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
+          disabled={isLoading || isSubmitting || !selectedLeadId}
+        >
+          {isSubmitting ? (
+            <>
+              <svg className="mr-2 h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Adding...
+            </>
+          ) : (
+            'Add to Lead'
+          )}
+        </button>
+      </form>
     </div>
   );
 };

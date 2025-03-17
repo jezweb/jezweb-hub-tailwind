@@ -1,25 +1,21 @@
 /**
  * ContactOrganisationForm Component
  * 
- * This component provides a form for managing organisations associated with a contact.
- * It displays the current associated organisations and allows users to add new ones.
+ * This component provides functionality to link and unlink organisations to a contact.
+ * It displays a list of currently associated organisations and a form to add new ones.
  * 
  * Features:
- * - Displays current associated organisations
- * - Allows selecting organisations from a dropdown
- * - Supports setting role and primary status
- * - Handles linking and unlinking organisations
+ * - Displays currently linked organisations with their roles
+ * - Provides a form to search and select organisations to link
+ * - Allows specifying the contact's role in the organisation
+ * - Supports setting a contact as primary for an organisation
+ * - Handles loading states and empty states
  */
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Contact } from '../../../types/Contact';
 import { Organisation } from '../../../types/Organisation';
-import { useOrganisationContacts } from '../../../hooks/contacts/useOrganisationContacts';
 
-/**
- * ContactOrganisationForm component props
- */
 interface ContactOrganisationFormProps {
   contact: Contact;
   organisations: Organisation[];
@@ -28,9 +24,6 @@ interface ContactOrganisationFormProps {
   onUnlinkOrganisation: (relationshipId: string) => Promise<void>;
 }
 
-/**
- * ContactOrganisationForm component
- */
 const ContactOrganisationForm: React.FC<ContactOrganisationFormProps> = ({
   contact,
   organisations,
@@ -38,328 +31,187 @@ const ContactOrganisationForm: React.FC<ContactOrganisationFormProps> = ({
   onLinkOrganisation,
   onUnlinkOrganisation
 }) => {
-  // State for form
+  // State for form inputs
   const [selectedOrganisationId, setSelectedOrganisationId] = useState<string>('');
   const [role, setRole] = useState<string>('staff');
   const [isPrimary, setIsPrimary] = useState<boolean>(false);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [associatedOrganisations, setAssociatedOrganisations] = useState<any[]>([]);
-  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Get organisation-contact relationship data
-  const {
-    fetchOrganisationsByContact
-  } = useOrganisationContacts();
-  
-  // Fetch associated organisations when contact changes
-  useEffect(() => {
-    const fetchOrganisations = async () => {
-      try {
-        const orgRelationships = await fetchOrganisationsByContact(contact.contactId);
-        setAssociatedOrganisations(orgRelationships);
-      } catch (err) {
-        console.error('Error fetching organisations for contact:', err);
-      }
-    };
-    
-    fetchOrganisations();
-  }, [contact.contactId, fetchOrganisationsByContact]);
-  
-  // Handle organisation selection
-  const handleOrganisationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedOrganisationId(e.target.value);
-  };
-  
-  // Handle role change
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRole(e.target.value);
-  };
-  
-  // Handle primary status change
-  const handlePrimaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsPrimary(e.target.checked);
-  };
-  
+
+  // Filter out already linked organisations
+  const availableOrganisations = organisations.filter(org => {
+    // Check if the organisation is already linked to the contact
+    return !contact.organisations?.some(
+      linkedOrg => linkedOrg.organisationId === org.organisationId
+    );
+  });
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedOrganisationId) return;
-    
-    setSubmitting(true);
+    if (!selectedOrganisationId) {
+      setError('Please select an organisation');
+      return;
+    }
+
+    setIsSubmitting(true);
     setError(null);
-    
+
     try {
-      await onLinkOrganisation(contact.contactId, selectedOrganisationId, role, isPrimary);
+      await onLinkOrganisation(
+        contact.contactId,
+        selectedOrganisationId,
+        role,
+        isPrimary
+      );
       
       // Reset form
       setSelectedOrganisationId('');
       setRole('staff');
       setIsPrimary(false);
-      setIsExpanded(false);
-      
-      // Refresh associated organisations
-      const orgRelationships = await fetchOrganisationsByContact(contact.contactId);
-      setAssociatedOrganisations(orgRelationships);
     } catch (err) {
-      console.error('Error linking organisation to contact:', err);
-      setError('Failed to link organisation to contact. Please try again.');
+      setError('Failed to link organisation. Please try again.');
+      console.error('Error linking organisation:', err);
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
-  
+
   // Handle unlinking an organisation
-  const handleUnlinkOrganisation = async (relationshipId: string) => {
-    try {
-      await onUnlinkOrganisation(relationshipId);
-      
-      // Refresh associated organisations
-      const orgRelationships = await fetchOrganisationsByContact(contact.contactId);
-      setAssociatedOrganisations(orgRelationships);
-    } catch (err) {
-      console.error('Error unlinking organisation from contact:', err);
+  const handleUnlink = async (relationshipId: string, organisationName: string) => {
+    if (window.confirm(`Are you sure you want to remove ${contact.fullName} from ${organisationName}?`)) {
+      try {
+        await onUnlinkOrganisation(relationshipId);
+      } catch (err) {
+        console.error('Error unlinking organisation:', err);
+      }
     }
   };
-  
-  // Toggle expanded state
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-    if (!isExpanded) {
-      setSelectedOrganisationId('');
-      setRole('staff');
-      setIsPrimary(false);
-    }
-  };
-  
-  // Find organisation name by ID
-  const getOrganisationName = (organisationId: string): string => {
-    const org = organisations.find(org => org.organisationId === organisationId);
-    return org ? org.organisationName : `Organisation ${organisationId.substring(0, 6)}...`;
-  };
-  
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Organisations</h3>
-        <button
-          onClick={toggleExpanded}
-          className="text-gray-500 hover:text-primary"
-          aria-label={isExpanded ? "Collapse form" : "Expand form"}
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {isExpanded ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 15l7-7 7 7"
-              ></path>
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            )}
-          </svg>
-        </button>
-      </div>
+      <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">Organisations</h3>
       
-      {/* Associated Organisations */}
-      {associatedOrganisations.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-          No organisations associated with this contact
-        </p>
-      ) : (
-        <div className="space-y-3 mb-4">
-          {associatedOrganisations.map((org) => (
-            <div
-              key={org.relationshipId}
-              className="bg-gray-100 dark:bg-gray-700 rounded p-3"
+      {/* Display linked organisations */}
+      {contact.organisations && contact.organisations.length > 0 ? (
+        <div className="mb-4 space-y-2">
+          {contact.organisations.map((org) => (
+            <div 
+              key={org.relationshipId} 
+              className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-700"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <Link
-                    to={`/organisations/${org.organisationId}`}
-                    className="font-medium text-black dark:text-white hover:text-primary"
-                  >
-                    {getOrganisationName(org.organisationId)}
-                  </Link>
-                  {org.isPrimary && (
-                    <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                      Primary
-                    </span>
-                  )}
-                  {org.role && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      Role: {org.role}
-                    </p>
-                  )}
-                </div>
-                <div className="flex space-x-2">
-                  <Link
-                    to={`/organisations/${org.organisationId}`}
-                    className="text-gray-500 hover:text-primary"
-                    aria-label="View organisation"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      ></path>
-                    </svg>
-                  </Link>
-                  <button
-                    onClick={() => handleUnlinkOrganisation(org.relationshipId)}
-                    className="text-gray-500 hover:text-red-500"
-                    aria-label="Unlink organisation"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      ></path>
-                    </svg>
-                  </button>
-                </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {org.organisationName}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Role: {org.role || 'Not specified'}
+                  {org.isPrimary && ' (Primary)'}
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => handleUnlink(org.relationshipId, org.organisationName)}
+                className="ml-2 inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Remove
+              </button>
             </div>
           ))}
         </div>
+      ) : (
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          No organisations linked to this contact.
+        </p>
       )}
-      
-      {/* Add Organisation Form */}
-      {isExpanded && (
-        <form onSubmit={handleSubmit} className="mt-4">
-          <div className="mb-4">
-            <label htmlFor="organisation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Organisation
-            </label>
-            <select
-              id="organisation"
-              value={selectedOrganisationId}
-              onChange={handleOrganisationChange}
-              className="h-10 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              required
-            >
-              <option value="">Select an organisation</option>
-              {organisations.map((org) => (
-                <option key={org.organisationId} value={org.organisationId}>
-                  {org.organisationName}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Role
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={handleRoleChange}
-              className="h-10 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="owner">Owner</option>
-              <option value="manager">Manager</option>
-              <option value="staff">Staff</option>
-              <option value="technical">Technical Contact</option>
-              <option value="billing">Billing Contact</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <div className="flex items-center">
-              <input
-                id="isPrimary"
-                type="checkbox"
-                checked={isPrimary}
-                onChange={handlePrimaryChange}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700"
-              />
-              <label htmlFor="isPrimary" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Set as primary organisation
-              </label>
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Primary organisations are displayed first and highlighted
-            </p>
-          </div>
-          
-          {error && (
-            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm" role="alert">
-              {error}
-            </div>
-          )}
-          
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="rounded bg-primary py-2 px-4 text-sm font-medium text-white hover:bg-opacity-90 disabled:bg-opacity-70"
-              disabled={submitting || !selectedOrganisationId}
-            >
-              {submitting ? 'Linking...' : 'Link Organisation'}
-            </button>
-          </div>
-        </form>
-      )}
-      
-      {/* Create New Organisation Link */}
-      {!isExpanded && (
-        <div className="mt-4">
-          <Link
-            to={`/organisations/new?contactId=${contact.contactId}`}
-            className="inline-flex items-center text-sm text-primary hover:underline"
+
+      {/* Form to add new organisation */}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="organisation" className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+            Add to Organisation
+          </label>
+          <select
+            id="organisation"
+            value={selectedOrganisationId}
+            onChange={(e) => setSelectedOrganisationId(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+            disabled={isLoading || isSubmitting || availableOrganisations.length === 0}
           >
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Add New Organisation
-          </Link>
+            <option value="">Select an organisation</option>
+            {availableOrganisations.map((org) => (
+              <option key={org.organisationId} value={org.organisationId}>
+                {org.organisationName}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
+
+        <div className="mb-3">
+          <label htmlFor="role" className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+            Role
+          </label>
+          <select
+            id="role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+            disabled={isSubmitting}
+          >
+            <option value="staff">Staff</option>
+            <option value="manager">Manager</option>
+            <option value="director">Director</option>
+            <option value="owner">Owner</option>
+            <option value="contractor">Contractor</option>
+            <option value="client">Client</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <div className="flex items-center">
+            <input
+              id="isPrimary"
+              type="checkbox"
+              checked={isPrimary}
+              onChange={(e) => setIsPrimary(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+              disabled={isSubmitting}
+            />
+            <label htmlFor="isPrimary" className="ml-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
+              Set as primary contact
+            </label>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-3 rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className="inline-flex w-full items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
+          disabled={isLoading || isSubmitting || !selectedOrganisationId}
+        >
+          {isSubmitting ? (
+            <>
+              <svg className="mr-2 h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Adding...
+            </>
+          ) : (
+            'Add to Organisation'
+          )}
+        </button>
+      </form>
     </div>
   );
 };

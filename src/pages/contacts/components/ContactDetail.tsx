@@ -1,20 +1,17 @@
 /**
  * ContactDetail Component
- * 
+ *
  * This component displays detailed information about a contact.
- * It shows contact information, associated organisations, and provides
- * actions for editing and deleting the contact.
- * 
- * The component uses the useContacts and useOrganisationContacts hooks
- * for data fetching and management.
+ * It shows contact information and provides actions for editing
+ * and deleting the contact.
+ *
+ * The component uses the useContacts hook for data fetching and management.
  */
 
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useContacts } from '../../../hooks/contacts/useContacts';
-import { useOrganisationContacts } from '../../../hooks/contacts/useOrganisationContacts';
 import Button from '../../../components/ui/button/Button';
-import OrganisationAssociationForm from './OrganisationAssociationForm';
 import { Contact } from '../../../types/Contact';
 
 /**
@@ -47,45 +44,10 @@ const ContactDetail: React.FC<ContactDetailProps> = ({
     deleteContact
   } = useContacts();
   
-  const {
-    loading: loadingOrganisations,
-    error: organisationsError,
-    fetchOrganisationsByContact
-  } = useOrganisationContacts();
-  
-  // State for associated organisations
-  const [associatedOrganisations, setAssociatedOrganisations] = useState<{
-    organisationId: string;
-    relationshipId: string;
-    role?: string;
-    isPrimary: boolean;
-    priority: number;
-    organisationName?: string; // Added after fetching organisation details
-  }[]>([]);
-  
   // Fetch contact data on component mount
   useEffect(() => {
     fetchContactById(contactId);
   }, [contactId, fetchContactById]);
-  
-  // Fetch associated organisations when contact is loaded
-  useEffect(() => {
-    const fetchOrganisations = async () => {
-      if (selectedContact) {
-        const organisations = await fetchOrganisationsByContact(contactId);
-        
-        // TODO: Fetch organisation names using organisationService
-        // For now, we'll just use the IDs
-        setAssociatedOrganisations(organisations.map(org => ({
-          ...org,
-          organisationName: `Organisation ${org.organisationId.substring(0, 6)}...` // Placeholder
-        })));
-      }
-    };
-    
-    fetchOrganisations();
-  }, [selectedContact, contactId, fetchOrganisationsByContact]);
-  
   // Handle edit contact
   const handleEdit = () => {
     if (selectedContact) {
@@ -538,94 +500,7 @@ const ContactDetail: React.FC<ContactDetailProps> = ({
           </div>
         </div>
         
-        {/* Associated Organisations */}
-        <div>
-          <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
-            Associated Organisations
-          </h3>
-          
-          {loadingOrganisations ? (
-            <div className="flex justify-center items-center p-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : organisationsError ? (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">Error loading organisations</span>
-            </div>
-          ) : associatedOrganisations.length === 0 ? (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded p-4 text-center">
-              <p className="text-gray-600 dark:text-gray-400">
-                No associated organisations
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {associatedOrganisations.map((org) => (
-                <div
-                  key={org.relationshipId}
-                  className="bg-gray-100 dark:bg-gray-800 rounded p-4"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Link
-                        to={`/organisations/${org.organisationId}`}
-                        className="font-medium text-black dark:text-white hover:text-primary"
-                      >
-                        {org.organisationName}
-                      </Link>
-                      {org.isPrimary && (
-                        <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                          Primary
-                        </span>
-                      )}
-                      {org.role && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          Role: {org.role}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link
-                        to={`/organisations/${org.organisationId}`}
-                        className="text-gray-500 hover:text-primary"
-                        aria-label="View organisation"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          ></path>
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          ></path>
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-            
-          {/* Organisation Association Form */}
-            <OrganisationAssociationForm 
-              contactId={contactId}
-              onAssociationCreated={() => {
-                fetchOrganisationsByContact(contactId);
-            }}
-          />
-        </div>
+        {/* Additional sections can be added here */}
       </div>
       
       {/* Notes */}

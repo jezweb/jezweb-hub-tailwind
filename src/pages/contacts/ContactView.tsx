@@ -22,6 +22,8 @@ import { useOrganisations } from '../../hooks/organisations/useOrganisations';
 import { useLeads } from '../../hooks/leads/useLeads';
 import { Contact } from '../../types/Contact';
 import ContactDetail from './components/ContactDetail';
+import ContactOrganisationForm from './components/ContactOrganisationForm';
+import ContactLeadForm from './components/ContactLeadForm';
 
 /**
  * ContactView component
@@ -137,6 +139,40 @@ const ContactView: React.FC = () => {
     }
   };
   
+  // Handle link to lead action
+  const handleLinkLead = async (contactId: string, leadId: string) => {
+    try {
+      // This is a placeholder - you'll need to implement the actual API call
+      // to link a contact to a lead in your useLeads hook or similar
+      console.log(`Linking contact ${contactId} to lead ${leadId}`);
+      
+      // For demonstration purposes, we'll just refresh the contact data
+      // In a real implementation, you would call the API to link the contact to the lead
+      fetchContactById(contactId);
+    } catch (error) {
+      console.error('Error linking contact to lead:', error);
+      throw error;
+    }
+  };
+  
+  // Handle unlink from lead action
+  const handleUnlinkLead = async (relationshipId: string) => {
+    try {
+      // This is a placeholder - you'll need to implement the actual API call
+      // to unlink a contact from a lead in your useLeads hook or similar
+      console.log(`Unlinking relationship ${relationshipId}`);
+      
+      // For demonstration purposes, we'll just refresh the contact data
+      // In a real implementation, you would call the API to unlink the contact from the lead
+      if (id) {
+        fetchContactById(id);
+      }
+    } catch (error) {
+      console.error('Error unlinking contact from lead:', error);
+      throw error;
+    }
+  };
+  
   // Ensure we have an ID
   if (!id) {
     return (
@@ -212,24 +248,22 @@ const ContactView: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Organisation Association Section */}
-            <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">Organisations</h3>
-              
-              {/* We'll implement this component later */}
-              <p className="text-gray-600 dark:text-gray-400">
-                Organisation associations will be implemented here
-              </p>
-            </div>
+            <ContactOrganisationForm
+              contact={selectedContact}
+              organisations={organisations}
+              isLoading={loadingOrganisations}
+              onLinkOrganisation={handleLinkOrganisation}
+              onUnlinkOrganisation={handleUnlinkOrganisation}
+            />
             
             {/* Lead Association Section */}
-            <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">Leads</h3>
-              
-              {/* We'll implement this component later */}
-              <p className="text-gray-600 dark:text-gray-400">
-                Lead associations will be implemented here
-              </p>
-            </div>
+            <ContactLeadForm
+              contact={selectedContact}
+              leads={leads}
+              isLoading={loadingLeads}
+              onLinkLead={handleLinkLead}
+              onUnlinkLead={handleUnlinkLead}
+            />
           </div>
         </div>
       </div>
