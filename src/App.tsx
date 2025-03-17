@@ -59,7 +59,10 @@ import ContactView from "./pages/contacts/ContactView";
 import ContactEdit from "./pages/contacts/ContactEdit";
 import Invoices from "./pages/Invoices";
 import Articles from "./pages/Articles";
-import Quotes from "./pages/Quotes";
+import Quotes from "./pages/quotes";
+import QuoteCreate from "./pages/quotes/QuoteCreate";
+import QuoteView from "./pages/quotes/QuoteView";
+import QuoteEdit from "./pages/quotes/QuoteEdit";
 import FileManager from "./pages/FileManager";
 import Calendar from "./pages/Calendar";
 import PricingTables from "./pages/PricingTables";
@@ -177,6 +180,9 @@ export default function App() {
             <Route path="/contacts/:id" element={<ContactView />} />
             <Route path="/contacts/:id/edit" element={<ContactEdit />} />
             <Route path="/quotes" element={<Quotes />} />
+            <Route path="/quotes/create" element={<QuoteCreate />} />
+            <Route path="/quotes/:quoteId" element={<QuoteView />} />
+            <Route path="/quotes/:quoteId/edit" element={<QuoteEdit />} />
             <Route path="/articles" element={<Articles />} />
             <Route path="/ecommerce" element={<Ecommerce />} />
             <Route path="/analytics" element={<Analytics />} />
