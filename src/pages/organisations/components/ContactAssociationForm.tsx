@@ -22,6 +22,13 @@ import { useContacts } from '../../../hooks/contacts/useContacts';
 import { useOrganisationContacts } from '../../../hooks/contacts/useOrganisationContacts';
 import { OrganisationContactFormData } from '../../../types/OrganisationContact';
 
+// Import design system components
+import { Card } from '../../../components/ui/design-system/Card';
+import { ActionButton } from '../../../components/ui/design-system/ActionButton';
+import { ErrorMessage } from '../../../components/ui/design-system/ErrorMessage';
+import { LoadingState } from '../../../components/ui/design-system/LoadingState';
+import { FormSection } from '../../../components/ui/design-system/FormSection';
+
 /**
  * ContactAssociationForm component props
  */
@@ -43,7 +50,7 @@ const ContactAssociationForm: React.FC<ContactAssociationFormProps> = ({
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [role, setRole] = useState<string>('staff');
   const [isPrimary, setIsPrimary] = useState<boolean>(false);
-  const [isSearching, setIsSearching] = useState<boolean>(true);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   
   // Get contacts data and actions from the hooks
@@ -148,49 +155,50 @@ const ContactAssociationForm: React.FC<ContactAssociationFormProps> = ({
   };
   
   return (
-    <div className="bg-white dark:bg-boxdark rounded-sm border border-stroke dark:border-strokedark shadow-default mt-6">
-      <div className="p-4 border-b border-stroke dark:border-strokedark flex justify-between items-center">
-        <h3 className="text-xl font-semibold text-black dark:text-white">
-          Add Contact
-        </h3>
-        <button
-          onClick={toggleExpanded}
-          className="text-gray-500 hover:text-primary"
-          aria-label={isExpanded ? "Collapse form" : "Expand form"}
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+    <Card
+      header={
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Add Contact</h3>
+          <button
+            onClick={toggleExpanded}
+            className="text-gray-500 hover:text-primary"
+            aria-label={isExpanded ? "Collapse form" : "Expand form"}
           >
-            {isExpanded ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 15l7-7 7 7"
-              ></path>
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            )}
-          </svg>
-        </button>
-      </div>
-      
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {isExpanded ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 15l7-7 7 7"
+                ></path>
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              )}
+            </svg>
+          </button>
+        </div>
+      }
+      className="mt-6"
+    >
       {isExpanded && (
-        <div className="p-6">
-          <div className="mb-6">
-            <h4 className="text-lg font-medium text-black dark:text-white mb-4">
-              Search Existing Contacts
-            </h4>
-            
+        <div>
+          <FormSection
+            title="Search Existing Contacts"
+            bordered={false}
+            padded={false}
+          >
             <div className="relative mb-4">
               <input
                 type="text"
@@ -201,7 +209,7 @@ const ContactAssociationForm: React.FC<ContactAssociationFormProps> = ({
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2">
                 {isSearching ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary"></div>
+                  <LoadingState size="small" />
                 ) : (
                   <svg
                     className="h-5 w-5 text-gray-400"
@@ -254,12 +262,13 @@ const ContactAssociationForm: React.FC<ContactAssociationFormProps> = ({
                             {contact.email}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <button
+                            <ActionButton
+                              variant="primary"
+                              size="small"
                               onClick={() => handleSelectContact(contact)}
-                              className="inline-flex items-center justify-center rounded-md bg-primary py-1 px-3 text-white hover:bg-opacity-90"
                             >
                               Select
-                            </button>
+                            </ActionButton>
                           </td>
                         </tr>
                       ))}
@@ -282,60 +291,64 @@ const ContactAssociationForm: React.FC<ContactAssociationFormProps> = ({
                 </Link>
               </div>
             )}
-            
-            {/* Selected Contact */}
-            {selectedContact && (
-              <div className="mb-6">
-                <h4 className="text-lg font-medium text-black dark:text-white mb-4">
-                  Selected Contact
-                </h4>
-                <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h5 className="font-medium text-black dark:text-white">
-                        {selectedContact.fullName}
-                      </h5>
+          </FormSection>
+          
+          {/* Selected Contact */}
+          {selectedContact && (
+            <FormSection
+              title="Selected Contact"
+              bordered={false}
+              padded={false}
+              className="mb-6"
+            >
+              <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-medium text-black dark:text-white">
+                      {selectedContact.fullName}
+                    </h5>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {selectedContact.email}
+                    </p>
+                    {selectedContact.jobTitle && (
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {selectedContact.email}
+                        {selectedContact.jobTitle}
                       </p>
-                      {selectedContact.jobTitle && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {selectedContact.jobTitle}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setSelectedContact(null)}
-                      className="text-gray-500 hover:text-primary"
-                      aria-label="Remove selection"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        ></path>
-                      </svg>
-                    </button>
+                    )}
                   </div>
+                  <button
+                    onClick={() => setSelectedContact(null)}
+                    className="text-gray-500 hover:text-primary"
+                    aria-label="Remove selection"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  </button>
                 </div>
               </div>
-            )}
-            
-            {/* Association Form */}
-            {selectedContact && (
-              <form onSubmit={handleSubmit}>
-                <h4 className="text-lg font-medium text-black dark:text-white mb-4">
-                  Association Details
-                </h4>
-                
+            </FormSection>
+          )}
+          
+          {/* Association Form */}
+          {selectedContact && (
+            <form onSubmit={handleSubmit}>
+              <FormSection
+                title="Association Details"
+                bordered={false}
+                padded={false}
+              >
                 <div className="mb-4">
                   <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Role
@@ -374,63 +387,51 @@ const ContactAssociationForm: React.FC<ContactAssociationFormProps> = ({
                 </div>
                 
                 <div className="flex justify-end">
-                  <button
-                    type="button"
+                  <ActionButton
+                    variant="secondary"
                     onClick={() => setSelectedContact(null)}
-                    className="mr-3 rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
+                    className="mr-3"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </ActionButton>
+                  <ActionButton
                     type="submit"
-                    className="rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90 disabled:bg-opacity-70"
+                    variant="primary"
+                    isLoading={submitting}
                     disabled={submitting}
                   >
-                    {submitting ? 'Adding...' : 'Add Contact'}
-                  </button>
+                    Add Contact
+                  </ActionButton>
                 </div>
                 
                 {submitError && (
-                  <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    <strong className="font-bold">Error!</strong>
-                    <span className="block sm:inline"> {submitError.message}</span>
+                  <div className="mt-4">
+                    <ErrorMessage
+                      title="Error!"
+                      message={submitError.message}
+                    />
                   </div>
                 )}
-              </form>
-            )}
-            
-            {/* Create New Contact Link */}
-            {!selectedContact && (
-              <div className="mt-6 text-center">
-                <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  Can't find the contact you're looking for?
-                </p>
-                <Link
-                  to={`/contacts/new?organisationId=${organisationId}`}
-                  className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-6 text-white hover:bg-opacity-90"
-                >
-                  <span className="mr-2">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 0C3.58 0 0 3.58 0 8C0 12.42 3.58 16 8 16C12.42 16 16 12.42 16 8C16 3.58 12.42 0 8 0ZM12 9H9V12H7V9H4V7H7V4H9V7H12V9Z"
-                        fill="white"
-                      />
-                    </svg>
-                  </span>
+              </FormSection>
+            </form>
+          )}
+          
+          {/* Create New Contact Link */}
+          {!selectedContact && (
+            <div className="mt-6 text-center">
+              <p className="text-gray-600 dark:text-gray-400 mb-2">
+                Can't find the contact you're looking for?
+              </p>
+              <Link to={`/contacts/new?organisationId=${organisationId}`}>
+                <ActionButton variant="primary">
                   Create New Contact
-                </Link>
-              </div>
-            )}
-          </div>
+                </ActionButton>
+              </Link>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 
